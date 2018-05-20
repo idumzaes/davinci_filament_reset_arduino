@@ -313,10 +313,10 @@ static void dump_eeprom(word address,word length)
   int i,j;
 
   NanodeUNIO unio(NANODE_MAC_DEVICE);
-  
+
   memset(buf,0,128);
   status(unio.read(buf,address,length));
-  
+
   for (i=0; i<128; i+=16) {
     x=lbuf;
     sprintf(x,"%02X: ",i);
@@ -342,55 +342,59 @@ int led = 13;
 /*
 These are the values to be written to the EEPROM
 Make sure only one is uncommented.
-By default its set for the starter ABS cartdridge with 120m of filament 
-
-Verified with firmware 1.1.I
+Values for ABS cartdridge are set to
+  Filament Length   240m of
+  Extruder Temp     213 C
+  Bed Temp          90 C
+Verified with firmware 1.2.4
 */
 
 // Value to write to the EEPROM for remaining filament lenght
 // Default Starter Cartdridge is 120m
-char x[] = {0xc0,0xd4,0x01,0x00}; //120m
-//char x[] = {0x80,0xa9,0x03,0x00}; //240m
-//char x[] = {0x80,0x1a,0x06,0x00}; //400m
+//char x[] = {0xc0,0xd4,0x01,0x00};   //120m
+char x[] = {0x80,0xa9,0x03,0x00};   //240m
+//char x[] = {0x80,0x1a,0x06,0x00};   //400m
 
 // extruder temp, default is 210 C for ABS
-char et[] = {0xd2,0x00}; // 210 C 
-//char et[] = {0xe6,0x00}; // 230 C
-//char et[] = {0xf5,0x00}; // 245 C
-//char et[] = {0xfa,0x00}; // 250 C
+//char et[] = {0xd2,0x00};    //210 C
+char et[] = {0xd5,0x00};    //213 C
+//char et[] = {0xe6,0x00};    //230 C
+//char et[] = {0xf5,0x00};    // 245 C
 
 // bed temp 90 degrees, default ABS
-char bt[] = {0x5a,0x00};
+char bt[] = {0x5a,0x00};    //90 C
+//char bt[] = {0x5c,0x00};    //92 C
+//char bt[] = {0x5f,0x00};    //95 C
 
 byte sr;
 NanodeUNIO unio(NANODE_MAC_DEVICE);
-  
+
 void setup() {
   pinMode(13, OUTPUT);
   Serial.begin(115200);
 }
 
 void loop() {
-  
+
   do {
-    digitalWrite(led, LOW); 
-    Serial.println("Testing connection to Da Vinci EEPROM CHIP\n");    
+    digitalWrite(led, LOW);
+    Serial.println("Testing connection to Da Vinci EEPROM CHIP\n");
     delay(100);
     digitalWrite(led, HIGH);
   } while(!unio.read_status(&sr));
-  
+
   Serial.println("Da Vinci EEPROM found...");
   Serial.println("Reading the Davinci EEPROM Contents...");
   dump_eeprom(0,128);
   //dump_eeprom(116,4);
-	
+
   //Read the serial number - added by Matt
   byte buf[20];
   memset(buf,0,20);
   status(unio.read(buf,SN,12));
   //Increment the serial number
-  IncrementSerial(&buf[0], 0, 12);	
- 
+  IncrementSerial(&buf[0], 0, 12);
+
   Serial.println("Updating EEPROM...");
   status(unio.simple_write((const byte *)x,TOTALLEN,4));
   status(unio.simple_write((const byte *)x,NEWLEN,4));
@@ -410,8 +414,7 @@ void loop() {
 
   Serial.println("Dumping Content after modification...");
   dump_eeprom(0,128);
- 
-  digitalWrite(led, HIGH);   // turn the LED on
-  delay(10000);               // wait for two seconds 
-}
 
+  digitalWrite(led, HIGH);   // turn the LED on
+  delay(10000);               // wait for two seconds
+}
