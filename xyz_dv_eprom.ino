@@ -345,7 +345,7 @@ Make sure only one is uncommented.
 Values for ABS cartdridge are set to
   Filament Length   240m of
   Extruder Temp     213 C
-  Bed Temp          90 C
+  Bed Temp          88 C
 Verified with firmware 1.2.4
 */
 
@@ -362,7 +362,8 @@ char et[] = {0xd5,0x00};    //213 C
 //char et[] = {0xf5,0x00};    // 245 C
 
 // bed temp 90 degrees, default ABS
-char bt[] = {0x5a,0x00};    //90 C
+char bt[] = {0x58,0x00};    //88 C
+//char bt[] = {0x5a,0x00};    //90 C
 //char bt[] = {0x5c,0x00};    //92 C
 //char bt[] = {0x5f,0x00};    //95 C
 
