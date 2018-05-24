@@ -38,25 +38,25 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 #define CODE 0x00 //1 Byte
 #define MATERIAL 0x01 //1 Byte
 #define COLOR 0x02  //2 Bytes
-#define DATE 0x05	//4 Bytes
+#define DATE 0x05  //4 Bytes
 #define TOTALLEN 0x08 //4 Bytes
 #define NEWLEN 0x0C //4 Bytes
-#define HEADTEMP 0x10	//2 Bytes
-#define BEDTEMP 0x12	//2Bytes
-#define MLOC 0x14	//2 Bytes
-#define DLOC 0x16	//2 Bytes
-#define SN 0x18		//12 Bytes
-#define CRC 0x24	//2 Bytes
-#define LEN2 0x34	//4 Bytes
+#define HEADTEMP 0x10 //2 Bytes
+#define BEDTEMP 0x12  //2Bytes
+#define MLOC 0x14 //2 Bytes
+#define DLOC 0x16 //2 Bytes
+#define SN 0x18   //12 Bytes
+#define CRC 0x24  //2 Bytes
+#define LEN2 0x34 //4 Bytes
 
 void IncrementSerial(unsigned char * cArray, long lAddress, long lSize)
 {
-	unsigned char szTempBuffer[20] = {0};
-	memcpy(szTempBuffer,&cArray[lAddress],lSize);
-	long lSerial = atol((char *)szTempBuffer);
-	lSerial++;
-	sprintf((char *)szTempBuffer,"%04d",lSerial);
-	memcpy(&cArray[lAddress],szTempBuffer,lSize);
+  unsigned char szTempBuffer[20] = {0};
+  memcpy(szTempBuffer,&cArray[lAddress],lSize);
+  long lSerial = atol((char *)szTempBuffer);
+  lSerial++;
+  sprintf((char *)szTempBuffer,"%04d",lSerial);
+  memcpy(&cArray[lAddress],szTempBuffer,lSize);
 }
 
 class NanodeUNIO {
@@ -416,6 +416,13 @@ void loop() {
   Serial.println("Dumping Content after modification...");
   dump_eeprom(0,128);
 
+  //Success visual invicator
+  delay(1000);               // wait for one second then blink 5x
+  for (int b=1; b<=5; b+=1){
   digitalWrite(led, HIGH);   // turn the LED on
-  delay(10000);               // wait for two seconds
+  delay(500);
+  digitalWrite(led, LOW);    // turn the LED off
+  delay(500);
+  }
+
 }
