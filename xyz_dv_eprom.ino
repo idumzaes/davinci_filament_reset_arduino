@@ -23,17 +23,6 @@ LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
 OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 
-/************************************************************
-
-Pinout looking at the pads on the EEPROM board
-
--------------------\
-|                   \
-|  GND   SCIO   +5V  \
-|                    |
-----------------------
-
-*************************************************************/
 #ifndef _NANODEUNIO_LIB_H
 #define _NANODEUNIO_LIB_H
 
@@ -104,37 +93,15 @@ class NanodeUNIO {
 #define UNIO_THDR    5
 #define UNIO_QUARTER_BIT 10
 #define UNIO_FUDGE_FACTOR 5
-
-#if defined(__AVR__)
-  #define UNIO_OUTPUT() do { DDRD |= 0x80; } while (0)
-  #define UNIO_INPUT() do { DDRD &= 0x7f; } while (0)
-#else
-  #define UNIO_PIN  10
-  #define UNIO_OUTPUT() pinMode(UNIO_PIN, OUTPUT)
-  #define UNIO_INPUT() pinMode(UNIO_PIN, INPUT);
-
-void sei() {
-  enableInterrupts();
-}
-void cli() {
-  disableInterrupts();
-}
-#endif
+#define UNIO_OUTPUT() do { DDRD |= 0x80; } while (0)
+#define UNIO_INPUT() do { DDRD &= 0x7f; } while (0)
 
 static void set_bus(boolean state) {
-#if defined(__AVR__)
   PORTD=(PORTD&0x7f)|(!!state)<<7;
-#else
-  digitalWrite(UNIO_PIN, state);
-#endif
 }
 
 static boolean read_bus(void) {
-#if defined(__AVR__)
   return !!(PIND&0x80);
-#else
-  return digitalRead(UNIO_PIN);
-#endif
 }
 static void unio_inter_command_gap(void) {
   set_bus(1);
@@ -370,7 +337,7 @@ static void dump_eeprom(word address,word length)
   }
 }
 
-int led = LED_BUILTIN;
+int led = 13;
 
 /*
 These are the values to be written to the EEPROM
@@ -378,7 +345,7 @@ Make sure only one is uncommented.
 Values for ABS cartdridge are set to
   Filament Length   240m of
   Extruder Temp     213 C
-  Bed Temp          90 C
+  Bed Temp          88 C
 Verified with firmware 1.2.4
 */
 
@@ -395,26 +362,17 @@ char et[] = {0xd5,0x00};    //213 C
 //char et[] = {0xf5,0x00};    // 245 C
 
 // bed temp 90 degrees, default ABS
-//char bt[] = {0x58,0x00}; //88 C
-char bt[] = {0x5a,0x00}; //90C
-//char bt[] = {0x32,0x00}; //50C
-//char bt[] = {0x28,0x00}; //40C
-
-//Materials
-
-char mt[] = {0x41}; //ABS
-//char mt[] = {0x50}; //PLA
-//char mt[] = {0x46}; //Flex
-
+char bt[] = {0x58,0x00};    //88 C
+//char bt[] = {0x5a,0x00};    //90 C
+//char bt[] = {0x5c,0x00};    //92 C
+//char bt[] = {0x5f,0x00};    //95 C
 
 byte sr;
 NanodeUNIO unio(NANODE_MAC_DEVICE);
 
 void setup() {
-  pinMode(led, OUTPUT);
+  pinMode(13, OUTPUT);
   Serial.begin(115200);
-  while(!Serial);
-  delay(250);
 }
 
 void loop() {
@@ -438,17 +396,11 @@ void loop() {
   //Increment the serial number
   IncrementSerial(&buf[0], 0, 12);
 
-  Serial.println("Press enter to update EEPROM...");
-  while(!Serial.available());
-  while(Serial.available()) Serial.read();
-
   Serial.println("Updating EEPROM...");
   status(unio.simple_write((const byte *)x,TOTALLEN,4));
   status(unio.simple_write((const byte *)x,NEWLEN,4));
   status(unio.simple_write((const byte *)et,HEADTEMP,2)); // extruder temp
   status(unio.simple_write((const byte *)bt,BEDTEMP,2)); // bed temp
-  status(unio.simple_write((const byte *)mt,MATERIAL,1)); // Material
-
   //Write the serial number
   status(unio.simple_write((const byte *)buf,SN,12)); //Serial Number
   status(unio.simple_write((const byte *)x,LEN2,4));
@@ -457,7 +409,6 @@ void loop() {
   status(unio.simple_write((const byte *)x,64 + NEWLEN,4));
   status(unio.simple_write((const byte *)et,64 + HEADTEMP,2)); // extruder temp
   status(unio.simple_write((const byte *)bt,64 + BEDTEMP,2)); // bed temp
-  status(unio.simple_write((const byte *)mt,64 + MATERIAL,1)); // Material
    //Write the serial number
   status(unio.simple_write((const byte *)buf,64 + SN,12)); //Serial Number
   status(unio.simple_write((const byte *)x,64 + LEN2,4));
